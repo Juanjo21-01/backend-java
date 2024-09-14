@@ -1,0 +1,128 @@
+-- BASE DE DATOS
+CREATE DATABASE bd_editorial;
+
+USE bd_editorial;
+
+-- TABLAS
+-- 1. Editoriales
+CREATE TABLE editoriales (
+    id_editorial INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(50) NOT NULL
+);
+
+-- 2. Municipios
+CREATE TABLE municipios (
+    id_municipio INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(50) NOT NULL
+);
+
+-- 3. Direcciones
+CREATE TABLE direcciones (
+    id_direccion INT PRIMARY KEY AUTO_INCREMENT,
+    direccion_completa VARCHAR(255) NOT NULL,
+    id_municipio INT NOT NULL,
+    FOREIGN KEY (id_municipio) REFERENCES municipios(id_municipio)
+);
+
+-- 4. Sucursales
+CREATE TABLE sucursales (
+    id_sucursal INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(50) NOT NULL,
+    telefono VARCHAR(15) NOT NULL,
+    codigo VARCHAR(50) NOT NULL UNIQUE,
+    id_editorial INT NOT NULL,
+    id_direccion INT NOT NULL,
+    FOREIGN KEY (id_editorial) REFERENCES editoriales(id_editorial),
+    FOREIGN KEY (id_direccion) REFERENCES direcciones(id_direccion)
+);
+
+-- 5. Empleados
+CREATE TABLE empleados (
+    id_empleado INT PRIMARY KEY AUTO_INCREMENT,
+    nombres VARCHAR(75) NOT NULL,
+    apellidos VARCHAR(100) NOT NULL,
+    nit VARCHAR(15) NOT NULL UNIQUE,
+    telefono VARCHAR(15) NOT NULL,
+    id_sucursal INT NOT NULL,
+    FOREIGN KEY (id_sucursal) REFERENCES sucursales(id_sucursal)
+);
+
+-- 6. Especialidades de Periodistas
+CREATE TABLE especialidades (
+    id_especialidad INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(50) NOT NULL
+);
+
+-- 7. Periodistas
+CREATE TABLE periodistas (
+    id_periodista INT PRIMARY KEY AUTO_INCREMENT,
+    nombres VARCHAR(75) NOT NULL,
+    apellidos VARCHAR(100) NOT NULL,
+    nit VARCHAR(15) NOT NULL UNIQUE,
+    telefono VARCHAR(15) NOT NULL,
+    id_especialidad INT NOT NULL,
+    id_editorial INT NOT NULL,
+    FOREIGN KEY (id_especialidad) REFERENCES especialidades(id_especialidad),
+    FOREIGN KEY (id_editorial) REFERENCES editoriales(id_editorial)
+);
+
+-- 8. Periodicidad de la Revista
+CREATE TABLE periodicidades (
+    id_periodicidad INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(50) NOT NULL
+);
+
+-- 9. Tipos de Revistas
+CREATE TABLE tipos_revistas (
+    id_tipo_revista INT PRIMARY KEY AUTO_INCREMENT,
+    nombre VARCHAR(50) NOT NULL
+);
+-- 10. Revistas
+CREATE TABLE revistas (
+    id_revista INT PRIMARY KEY AUTO_INCREMENT,
+    titulo VARCHAR(100) NOT NULL,
+    numero_registro VARCHAR(255) NOT NULL UNIQUE,
+    fecha_publicacion DATE NOT NULL,
+    numero_paginas INT NOT NULL,
+    cantidad_vendidas INT NOT NULL,
+    id_periodicidad INT NOT NULL,
+    id_tipo_revista INT NOT NULL,
+    FOREIGN KEY (id_periodicidad) REFERENCES periodicidades(id_periodicidad),
+    FOREIGN KEY (id_tipo_revista) REFERENCES tipos_revistas(id_tipo_revista)
+);
+
+-- 11. Revistas de Sucursales
+CREATE TABLE revistas_sucursales (
+    id_revista_sucursal INT PRIMARY KEY AUTO_INCREMENT,
+    id_revista INT NOT NULL,
+    id_sucursal INT NOT NULL,
+    FOREIGN KEY (id_revista) REFERENCES revistas(id_revista),
+    FOREIGN KEY (id_sucursal) REFERENCES sucursales(id_sucursal)
+);
+
+-- 12. Secciones de Revistas
+CREATE TABLE secciones (
+    id_seccion INT PRIMARY KEY AUTO_INCREMENT,
+    titulo VARCHAR(50) NOT NULL,
+    extension VARCHAR(50) NOT NULL
+);
+
+-- 13. Secciones de Revistas
+CREATE TABLE secciones_revistas (
+    id_seccion_revista INT PRIMARY KEY AUTO_INCREMENT,
+    id_seccion INT NOT NULL,
+    id_revista INT NOT NULL,
+    FOREIGN KEY (id_seccion) REFERENCES secciones(id_seccion),
+    FOREIGN KEY (id_revista) REFERENCES revistas(id_revista)
+);
+
+-- 14. Artículos
+CREATE TABLE articulos (
+    id_articulo INT PRIMARY KEY AUTO_INCREMENT,
+    titulo VARCHAR(100) NOT NULL,
+    contenido TEXT NOT NULL,
+    id_periodista INT NOT NULL,
+    id_revista INT NOT NULL,
+    FOREIGN KEY (id_periodista) REFERENCES periodistas(id_periodista),
+    FOREIGN KEY (id_revista) REFERENCES revistas(id_revista)
+);

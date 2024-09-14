@@ -1,0 +1,135 @@
+-- BASE DE DATOS
+CREATE DATABASE bd_biblioteca;
+USE bd_biblioteca;
+
+-- TABLAS
+CREATE TABLE autores (
+    id_autor INT PRIMARY KEY AUTO_INCREMENT,
+    nombres VARCHAR(50) NOT NULL,
+    apellidos VARCHAR(50) NOT NULL,
+    nacionalidad VARCHAR(50)
+);
+CREATE TABLE libros (
+    id_libro INT PRIMARY KEY AUTO_INCREMENT,
+    titulo VARCHAR(50) NOT NULL,
+    genero VARCHAR(50),
+    editorial VARCHAR(50),
+    cantidad_disponible INT,
+    fecha_publicacion DATE,
+    id_autor INT,
+    FOREIGN KEY (id_autor) REFERENCES autores(id_autor)
+);
+CREATE TABLE miembros (
+    id_miembro INT PRIMARY KEY AUTO_INCREMENT,
+    nombres VARCHAR(50) NOT NULL,
+    apellidos VARCHAR(50) NOT NULL,
+    direccion VARCHAR(50),
+    telefono VARCHAR(50),
+    fecha_nacimiento DATE
+);
+CREATE TABLE prestamos (
+    id_prestamo INT PRIMARY KEY AUTO_INCREMENT,
+    fecha_prestamo DATE,
+    fecha_devolucion DATE,
+    devuelto BIT,
+    id_libro INT,
+    id_miembro INT,
+    FOREIGN KEY (id_libro) REFERENCES libros(id_libro),
+    FOREIGN KEY (id_miembro) REFERENCES miembros(id_miembro)
+);
+
+-- 1. INSERTAR
+INSERT INTO autores (nombres, apellidos, nacionalidad) VALUES ('Viktor', 'Frankl', 'Austriaca');
+INSERT INTO autores (nombres, apellidos, nacionalidad) VALUES ('Miguel Angel', 'Asturias', 'Guatemalteca');
+INSERT INTO autores (nombres, apellidos, nacionalidad) VALUES ('Paulo', 'Coelho', 'Brasileña');
+INSERT INTO autores (nombres, apellidos, nacionalidad) VALUES ('Jane', 'Austen', 'Inglesa');
+INSERT INTO autores (nombres, apellidos, nacionalidad) VALUES ('Gabriel', 'García Márquez', 'Colombiana');
+
+INSERT INTO libros (titulo, genero, editorial, cantidad_disponible, fecha_publicacion, id_autor) VALUES ('El hombre en busca de sentido', 'Psicología', 'Herder', 10, '2015-11-07', 1);
+INSERT INTO libros (titulo, genero, editorial, cantidad_disponible, fecha_publicacion, id_autor) VALUES ('Hombres de maíz', 'Novela', 'Fondo de Cultura Económica', 3, '2019-02-15', 2);
+INSERT INTO libros (titulo, genero, editorial, cantidad_disponible, fecha_publicacion, id_autor) VALUES ('El Señor Presidente', 'Novela', 'Fondo de Cultura Económica', 5, '2010-05-12', 2);
+INSERT INTO libros (titulo, genero, editorial, cantidad_disponible, fecha_publicacion, id_autor) VALUES ('El peregrino de Compostela', 'Novela', 'Planeta', 6, '2016-08-23', 1);
+INSERT INTO libros (titulo, genero, editorial, cantidad_disponible, fecha_publicacion, id_autor) VALUES ('Veronika decide morir', 'Novela', 'Planeta', 8, '2018-09-30', 2);
+INSERT INTO libros (titulo, genero, editorial, cantidad_disponible, fecha_publicacion, id_autor) VALUES ('Mujeres de ojos grandes', 'Cuentos', 'Planeta', 12, '2017-04-15', 4);
+INSERT INTO libros (titulo, genero, editorial, cantidad_disponible, fecha_publicacion, id_autor) VALUES ('Doce cuentos peregrinos', 'Cuentos', 'Alfaguara', 7, '2016-08-23', 5);
+INSERT INTO libros (titulo, genero, editorial, cantidad_disponible, fecha_publicacion, id_autor) VALUES ('El alquimista', 'Novela', 'Planeta', 11, '2012-08-23', 5);
+INSERT INTO libros (titulo, genero, editorial, cantidad_disponible, fecha_publicacion, id_autor) VALUES ('Orgullo y prejuicio', 'Novela', 'Penguin Random House', 13, '2018-03-15', 4);
+INSERT INTO libros (titulo, genero, editorial, cantidad_disponible, fecha_publicacion, id_autor) VALUES ('Cien años de soledad', 'Novela', 'Alfaguara', 12, '2019-06-30', 5);
+
+INSERT INTO miembros (nombres, apellidos, direccion, telefono, fecha_nacimiento) VALUES ('Juan', 'Hernández', 'San Marcos', '54218731', '2001-07-05');
+INSERT INTO miembros (nombres, apellidos, direccion, telefono, fecha_nacimiento) VALUES ('María', 'González', 'Quetzaltenango', '54218732', '2003-02-16');
+INSERT INTO miembros (nombres, apellidos, direccion, telefono, fecha_nacimiento) VALUES ('Carlos', 'Orozco', 'Guatemala', '54218733', '1998-11-27');
+
+INSERT INTO prestamos (fecha_prestamo, fecha_devolucion, devuelto, id_libro, id_miembro) VALUES ('2024-08-20', '2024-09-02', 0, 8, 1);
+INSERT INTO prestamos (fecha_prestamo, fecha_devolucion, devuelto, id_libro, id_miembro) VALUES ('2024-08-24', '2024-09-07', 0, 2, 3);
+
+-- 2. MODIFICAR
+UPDATE miembros SET direccion = 'Antigua Guatemala', telefono = '46178025' WHERE id_miembro = 2;
+UPDATE libros SET cantidad_disponible = 2 WHERE id_libro = 2;
+
+-- 3. ELIMINAR
+DELETE FROM autores WHERE id_autor = 3;
+DELETE FROM miembros WHERE id_miembro = 2;
+
+-- 4. CONSULTAS
+SELECT * FROM libros WHERE genero = 'Novela';
+SELECT * FROM miembros WHERE YEAR(CURDATE()) - YEAR(fecha_nacimiento) BETWEEN 18 AND 25;
+SELECT * FROM prestamos WHERE devuelto = 0;
+
+-- 5. CONSULTAS AVANZADAS
+SELECT a.nombres as 'Autor del Libro', l.titulo, COUNT(p.id_libro) as 'Cantidad Prestada' FROM prestamos p 
+JOIN libros l ON p.id_libro = l.id_libro
+JOIN autores a ON l.id_autor = a.id_autor
+GROUP BY p.id_libro LIMIT 3;
+
+SELECT a.nombres as 'Autor del Libro', COUNT(l.id_libro) as 'Cantidad de Libros' FROM libros l
+JOIN autores a ON l.id_autor = a.id_autor
+GROUP BY l.id_autor
+HAVING COUNT(l.id_libro) > 2;
+
+SELECT CONCAT('El miembro ', m.nombres, ' de ', m.direccion, ' ha prestado el libro: ', l.titulo, ' - del autor: ', a.nombres, ' en la fecha: ', p.fecha_prestamo) as 'Prestamos de libros de un autor' FROM prestamos p
+JOIN miembros m ON p.id_miembro = m.id_miembro
+JOIN libros l ON p.id_libro = l.id_libro
+JOIN autores a ON l.id_autor = a.id_autor
+WHERE a.nombres = 'Miguel Angel';
+
+-- 6. VISTAS
+CREATE VIEW vista_nombre_autor AS
+SELECT CONCAT(a.nombres, ' ', a.apellidos) AS 'Nombre completo del Autor', COUNT(l.id_libro) AS 'Cantidad de Libros'
+FROM autores a
+LEFT JOIN libros l ON a.id_autor = l.id_autor
+GROUP BY a.id_autor;
+
+CREATE VIEW vista_informacion_p_l_m AS
+SELECT p.id_prestamo, p.fecha_prestamo,  l.titulo, m.nombres, m.apellidos
+FROM prestamos p
+JOIN miembros m ON p.id_miembro = m.id_miembro
+JOIN libros l ON p.id_libro = l.id_libro;
+
+-- 7. FUNCION Y PROCEDIMIENTO ALMACENADO
+DELIMITER //
+CREATE FUNCTION total_libros() 
+RETURNS INT
+DETERMINISTIC
+BEGIN
+   DECLARE total INT;
+   SELECT SUM(cantidad_disponible) INTO total FROM libros;
+   RETURN total;
+END //
+DELIMITER ;
+
+SELECT total_libros();
+
+DELIMITER //
+CREATE PROCEDURE guardar_prestamo(IN p_fecha_prestamo DATE, IN p_fecha_devolucion DATE, IN p_devuelto BIT, IN p_id_libro INT, IN p_id_miembro INT)
+BEGIN
+    INSERT INTO prestamos (fecha_prestamo, fecha_devolucion, devuelto, id_libro, id_miembro)
+    VALUES (p_fecha_prestamo, p_fecha_devolucion, p_devuelto, p_id_libro, p_id_miembro);
+
+    UPDATE libros
+    SET cantidad_disponible = cantidad_disponible - 1
+    WHERE id_libro = p_id_libro;
+END;//
+DELIMITER ;
+
+CALL guardar_prestamo('2024-09-09', '2024-09-09', 0, 1, 1);
