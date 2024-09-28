@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="contenedor">
+        <h1>Clientes</h1>
+        <ul id="clientes">
+        </ul>
+    </div>
+    <script>
+        // peticion fetch a localhost:8080/clientes/listar y renderizar los datos en el ul
+        fetch('http://localhost:8080/clientes/listar')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                
+                const clientes = document.getElementById('clientes');
+                data.forEach(cliente => {
+                    const li = document.createElement('li');
+                    li.textContent = cliente.nombre;
+                    clientes.appendChild(li);
+                });
+            });
+
+
+    </script>
+</body>
+</html>
